@@ -4,7 +4,7 @@ from pathlib import Path
 from lxml import etree
 from transformers import AutoTokenizer
 
-from html_utils import get_cleaned_body
+from .html_utils import get_cleaned_body
 
 tokenizer = AutoTokenizer.from_pretrained("roberta-base")
 
@@ -84,6 +84,8 @@ def generate_subtrees(root,m,s):
     return _get_subtrees(pre_order,post_order,m,s)
 
 def _tokens_len(elements):
+    if len(elements) == 0:
+        return 0
     tokens = tokenize_elements(elements)
     return tokens["attention_mask"].sum().item()
 
@@ -121,8 +123,7 @@ def _get_subtrees(pre_order,post_order, m,s):
                 num_child = sum(child in new or child in visited for child in el_root)        
             else:
                 num_child = 2 # pop from new if there are no nodes in visited left
-            
-            num_child = sum(child in new or child in visited for child in el_root)        
+
             if num_child < 2:
                 total_len -= _tokens_len([el_root])
                 visited.pop(0)            

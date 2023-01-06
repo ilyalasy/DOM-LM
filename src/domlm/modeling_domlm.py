@@ -1,17 +1,4 @@
 # coding=utf-8
-# Copyright 2022 Microsoft Research Asia and the HuggingFace Inc. team.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 """ PyTorch DOMLM model."""
 
 import math
@@ -49,6 +36,7 @@ from .configuration_domlm import DOMLMConfig
 
 
 logger = logging.get_logger(__name__)
+_CONFIG_FOR_DOC = "DOMLMConfig"
 
 
 class TreePositionEmbeddings(nn.Module):
@@ -688,7 +676,7 @@ class DOMLMPreTrainedModel(PreTrainedModel):
     """
 
     config_class = DOMLMConfig
-    pretrained_model_archive_map = DOMLM_PRETRAINED_MODEL_ARCHIVE_LIST
+    # pretrained_model_archive_map = DOMLM_PRETRAINED_MODEL_ARCHIVE_LIST
     base_model_prefix = "DOMLM"
     _keys_to_ignore_on_load_missing = [r"position_ids"]
 
@@ -943,7 +931,7 @@ class DOMLMModel(DOMLMPreTrainedModel):
             reordered_past += (tuple(past_state.index_select(0, beam_idx) for past_state in layer_past),)
         return reordered_past
 
-@add_start_docstrings("""Bert Model with a `language modeling` head on top.""", BERT_START_DOCSTRING)
+@add_start_docstrings("""Bert Model with a `language modeling` head on top.""", DOMLM_START_DOCSTRING)
 class DOMLMForMaskedLM(DOMLMPreTrainedModel):
 
     _keys_to_ignore_on_load_unexpected = [r"pooler"]
