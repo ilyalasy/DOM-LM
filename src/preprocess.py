@@ -4,7 +4,7 @@ from pathlib import Path
 from lxml import etree
 from transformers import AutoTokenizer
 
-from .html_utils import get_cleaned_body
+from src.html_utils import get_cleaned_body
 
 tokenizer = AutoTokenizer.from_pretrained("roberta-base")
 
@@ -179,12 +179,12 @@ def get_features(element: etree._Element):
     len_tokens = len(tokenizer_res["input_ids"])
 
     result = {
-        "node_idx": [node_idx] * len_tokens, # p0
-        "parent_node_idx": [parent_node_idx] * len_tokens, # p1
-        "node_idx_siblings": [node_idx_siblings] * len_tokens, # p2
-        "depth": [depth] * len_tokens, # p3
-        "tag_id": [tag_id] * len_tokens, # p4
-        "tok_positions": [token_idx + i for i in range(len_tokens)], # p5
+        "node_ids": [node_idx] * len_tokens, # p0
+        "parent_node_ids": [parent_node_idx] * len_tokens, # p1
+        "sibling_node_ids": [node_idx_siblings] * len_tokens, # p2
+        "depth_ids": [depth] * len_tokens, # p3
+        "tag_ids": [tag_id] * len_tokens, # p4
+        "position_ids": [token_idx + i for i in range(len_tokens)], # p5
         **tokenizer_res
     }
     return result
@@ -194,20 +194,20 @@ def get_features(element: etree._Element):
 def get_tree_features(t):
     elem_idxs = {}
     result = {
-            "node_idx": [] , # p0
-            "parent_node_idx": [] , # p1
-            "node_idx_siblings": [] , # p2
-            "depth": [] , # p3
-            "tag_id": [] , # p4
+            "node_ids": [] , # p0
+            "parent_node_ids": [] , # p1
+            "sibling_node_ids": [] , # p2
+            "depth_ids": [] , # p3
+            "tag_ids": [] , # p4
             "input_ids": [],
             "attention_mask" : []
         }
+    reprs = []
+    el_results = []
     for i,el in enumerate(t):
         el_parent = el.getparent()
         el_repr = represent_node(el)   
-        # TODO: do batch tokenization
-        tokenizer_res = tokenizer(el_repr)   
-        len_tokens = len(tokenizer_res["input_ids"])
+        reprs.append(el_repr)        
         
         parent_node_idx = -1
         node_idx = i
@@ -221,17 +221,25 @@ def get_tree_features(t):
         depth = _get_depth(el,t[0])
         tag_id = TAG_TO_INT.get(str(el.tag),TAG_TO_INT["UNK"])
 
-        el_result = {
-            "node_idx": node_idx , # p0
-            "parent_node_idx": parent_node_idx , # p1
-            "node_idx_siblings": node_idx_siblings , # p2
-            "depth": depth, # p3
-            "tag_id": tag_id , # p4
-            **tokenizer_res
-        }
+        el_results.append( {
+            "node_ids": node_idx , # p0
+            "parent_node_ids": parent_node_idx , # p1
+            "sibling_node_ids": node_idx_siblings , # p2
+            "depth_ids": depth, # p3
+            "tag_ids": tag_id , # p4            
+            }
+        )
+    # do batch tokenization
+    tokenizer_res = tokenizer(reprs,return_tensors="pt",truncation=True,padding=True)     
+    for el_result,input_ids,attn_mask in zip(el_results,tokenizer_res["input_ids"],tokenizer_res["attention_mask"]):
+        len_tokens = attn_mask.sum().item()                
+        input_ids = input_ids[:len_tokens].tolist()
+        attn_mask = attn_mask[:len_tokens].tolist()
         for key in result:
-            if key in ["input_ids","attention_mask"]:
-                result[key] += el_result[key]
+            if key == "input_ids":
+                result[key] += input_ids
+            elif key == "attention_mask":
+                result[key] += attn_mask
             else:
                 result[key] += [el_result[key]] * len_tokens
     return result
@@ -241,11 +249,11 @@ def extract_features(html_string,config,m=None,s=128):
     if m is None:
         m = tokenizer.model_max_length
     padding_idxs = {
-        "node_idx": config.node_pad_id,
-        "parent_node_idx":config.node_pad_id,
-        "node_idx_siblings": config.sibling_pad_id,
-        "depth": config.depth_pad_id,
-        "tag_id": config.tag_pad_id,
+        "node_ids": config.node_pad_id,
+        "parent_node_ids":config.node_pad_id,
+        "sibling_node_ids": config.sibling_pad_id,
+        "depth_ids": config.depth_pad_id,
+        "tag_ids": config.tag_pad_id,
         # "tok_positions": max_position_embeddings + 1, # p5
         "input_ids": tokenizer.pad_token_id,
         "attention_mask": 0,
