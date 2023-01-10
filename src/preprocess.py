@@ -237,24 +237,18 @@ def get_tree_features(t):
     return result
 
 
-max_node_embeddings=2048
-max_sibling_embeddings=128
-max_depth_embeddings=128
-max_tag_embeddings = 128
-max_position_embeddings=512
-
-padding_idxs = {
-        "node_idx": max_node_embeddings + 1,
-        "parent_node_idx":max_node_embeddings + 1, 
-        "node_idx_siblings": max_sibling_embeddings + 1, 
-        "depth": max_depth_embeddings + 1, 
-        "tag_id": max_tag_embeddings + 1, 
-        "tok_positions": max_position_embeddings + 1, # p5
+def extract_features(html_string,config,m=512,s=128):
+    padding_idxs = {
+        "node_idx": config.node_pad_id,
+        "parent_node_idx":config.node_pad_id,
+        "node_idx_siblings": config.sibling_pad_id,
+        "depth": config.depth_pad_id,
+        "tag_id": config.tag_pad_id,
+        # "tok_positions": max_position_embeddings + 1, # p5
         "input_ids": tokenizer.pad_token_id,
         "attention_mask": 0,
     }
 
-def extract_features(html_string,m=512,s=128):
     dom = get_cleaned_body(html_string)
     subtrees = generate_subtrees(dom,m,s) # requires tokenizer
     result = []
