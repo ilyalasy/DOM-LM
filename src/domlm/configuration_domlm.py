@@ -118,8 +118,8 @@ class DOMLMConfig(PretrainedConfig):
         self.max_tag_embeddings = max_tag_embeddings
         self.max_position_embeddings = max_position_embeddings
 
-        self.node_pad_id = max_node_embeddings 
-        self.sibling_pad_id = max_sibling_embeddings
-        self.depth_pad_id = max_depth_embeddings
-        self.tag_pad_id = max_tag_embeddings        
+        self.node_pad_id = max_node_embeddings  - 1 
+        self.sibling_pad_id = max_sibling_embeddings - 1 
+        self.depth_pad_id = max_depth_embeddings - 1
+        self.tag_pad_id = max_tag_embeddings - 1
         

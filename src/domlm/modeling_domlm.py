@@ -677,7 +677,7 @@ class DOMLMPreTrainedModel(PreTrainedModel):
 
     config_class = DOMLMConfig
     # pretrained_model_archive_map = DOMLM_PRETRAINED_MODEL_ARCHIVE_LIST
-    base_model_prefix = "DOMLM"
+    base_model_prefix = "domlm"
     _keys_to_ignore_on_load_missing = [r"position_ids"]
 
     # Copied from transformers.models.bert.modeling_bert.BertPreTrainedModel._init_weights with Bert->DOMLM
@@ -702,7 +702,7 @@ class DOMLMPreTrainedModel(PreTrainedModel):
         return super(DOMLMPreTrainedModel, cls).from_pretrained(
             pretrained_model_name_or_path, *model_args, **kwargs
         )
-
+        
 
 DOMLM_START_DOCSTRING = r"""
     This model is a PyTorch [torch.nn.Module](https://pytorch.org/docs/stable/nn.html#torch.nn.Module) sub-class. Use
@@ -1059,7 +1059,7 @@ class DOMLMForQuestionAnswering(DOMLMPreTrainedModel):
         super().__init__(config)
         self.num_labels = config.num_labels
 
-        self.DOMLM = DOMLMModel(config, add_pooling_layer=False)
+        self.domlm = DOMLMModel(config, add_pooling_layer=False)
         self.qa_outputs = nn.Linear(config.hidden_size, config.num_labels)
 
         # Initialize weights and apply final processing
@@ -1124,7 +1124,7 @@ class DOMLMForQuestionAnswering(DOMLMPreTrainedModel):
         ```"""
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-        outputs = self.DOMLM(
+        outputs = self.domlm(
             input_ids,
             node_ids=node_ids, 
             parent_node_ids=parent_node_ids,
@@ -1185,7 +1185,7 @@ class DOMLMForTokenClassification(DOMLMPreTrainedModel):
         super().__init__(config)
         self.num_labels = config.num_labels
 
-        self.DOMLM = DOMLMModel(config, add_pooling_layer=False)
+        self.domlm = DOMLMModel(config, add_pooling_layer=False)
         classifier_dropout = (
             config.classifier_dropout if config.classifier_dropout is not None else config.hidden_dropout_prob
         )
@@ -1244,7 +1244,7 @@ class DOMLMForTokenClassification(DOMLMPreTrainedModel):
         ```"""
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-        outputs = self.DOMLM(
+        outputs = self.domlm(
             input_ids,
             input_ids=input_ids,
             node_ids=node_ids, 
@@ -1299,7 +1299,7 @@ class DOMLMForSequenceClassification(DOMLMPreTrainedModel):
         self.num_labels = config.num_labels
         self.config = config
 
-        self.DOMLM = DOMLMModel(config)
+        self.domlm = DOMLMModel(config)
         classifier_dropout = (
             config.classifier_dropout if config.classifier_dropout is not None else config.hidden_dropout_prob
         )
@@ -1357,7 +1357,7 @@ class DOMLMForSequenceClassification(DOMLMPreTrainedModel):
         ```"""
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-        outputs = self.DOMLM(
+        outputs = self.domlm(
             input_ids,
             node_ids=node_ids, 
             parent_node_ids=parent_node_ids,
