@@ -237,7 +237,9 @@ def get_tree_features(t):
     return result
 
 
-def extract_features(html_string,config,m=512,s=128):
+def extract_features(html_string,config,m=None,s=128):
+    if m is None:
+        m = tokenizer.model_max_length
     padding_idxs = {
         "node_idx": config.node_pad_id,
         "parent_node_idx":config.node_pad_id,
