@@ -17,15 +17,23 @@ DOMAIN = "university"
 
 config = DOMLMConfig.from_json_file("domlm-config/config.json")
 
-files = sorted((SWDE_PATH / DOMAIN).glob("**/*.htm"))
+start_from = 4000
+files = sorted((SWDE_PATH / DOMAIN).glob("**/*.htm"))[start_from:]
 pbar = tqdm.tqdm(files,total=len(files))
-for path in pbar:
+errors = []
+for path in pbar:    
     pbar.set_description(f"Processing {path.relative_to(SWDE_PATH / DOMAIN)}")
     with open(path,'r') as f:
         html = f.read()
-    features = extract_features(html,config)
-    dir_name = PROC_PATH / DOMAIN / path.parent.name
-    dir_name.mkdir(parents=True,exist_ok=True)
-    with open(dir_name / path.with_suffix(".pkl").name,'wb') as f:
-        pickle.dump(features,f)            
+    try:
+        features = extract_features(html,config)
+        dir_name = PROC_PATH / DOMAIN / path.parent.name
+        dir_name.mkdir(parents=True,exist_ok=True)
+        with open(dir_name / path.with_suffix(".pkl").name,'wb') as f:
+            pickle.dump(features,f)          
+    except Exception:
+        errors.append(path)
+        pass
+print(f"Total errors: {len(errors)}")
+
 
