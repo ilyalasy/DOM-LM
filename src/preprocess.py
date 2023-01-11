@@ -209,10 +209,10 @@ def get_tree_features(t):
         el_repr = represent_node(el)   
         reprs.append(el_repr)        
         
-        parent_node_idx = -1
+        parent_node_idx = 0 
         node_idx = i
         if el_parent in elem_idxs:        
-            parent_node_idx = elem_idxs[el_parent]
+            parent_node_idx = elem_idxs[el_parent] + 1 # Should it be different from node_id?
         elem_idxs[el] = node_idx
 
         siblings = [child for child in el_parent if child in elem_idxs]
