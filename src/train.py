@@ -42,12 +42,19 @@ data_collator = DataCollatorForDOMNodeMask(tokenizer=tokenizer, mlm_probability=
 training_args = TrainingArguments(
     output_dir="./results",
     evaluation_strategy="steps",
-    per_device_train_batch_size=8,
-    per_device_eval_batch_size=8,
+    optim="adamw_apex_fused", # install https://github.com/NVIDIA/apex
     weight_decay=0.01,
     num_train_epochs=5,
     warmup_ratio=0.1,
-    learning_rate=1e-4
+    learning_rate=1e-4,
+    per_device_train_batch_size=4,
+    per_device_eval_batch_size=64,
+    gradient_accumulation_steps=16, # 4 * 16 = 64
+    gradient_checkpointing=True,
+    bf16 = True, # If not Ampere - fp16 = True
+    tf32 = True, # Ampere Only
+    dataloader_num_workers=4,
+    dataloader_pin_memory=True
 )
 
 trainer = Trainer(
