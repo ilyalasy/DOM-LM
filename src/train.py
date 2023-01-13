@@ -54,7 +54,7 @@ training_args = TrainingArguments(
     warmup_ratio=0.1,
     learning_rate=1e-4,
     per_device_train_batch_size=16,
-    per_device_eval_batch_size=64,
+    per_device_eval_batch_size=16,
     gradient_accumulation_steps=4,
     # gradient_checkpointing=True, # vram is enough without checkpointing on A4000
     bf16 = True, # If not Ampere: fp16 = True
