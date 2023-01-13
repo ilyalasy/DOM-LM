@@ -1,4 +1,4 @@
-# DOM-LM
+# DOM-LM - Pytorch (wip)
 Unofficial implementation of [Dom-LM paper](https://arxiv.org/abs/2201.10608).
 
 ## Masked LM Training
@@ -12,4 +12,4 @@ Unofficial implementation of [Dom-LM paper](https://arxiv.org/abs/2201.10608).
 - [ ] Add Fine-tuning code for Attribute Extraction
 - [ ] Add Fine-tuning code for Open Information Extraction
 - [ ] Add Fine-tuning code for QA
-- [ ] Train some models and add results
+- [ ] Train some models and compare results
