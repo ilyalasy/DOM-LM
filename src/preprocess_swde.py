@@ -11,13 +11,13 @@ if str(ROOT) not in sys.path:
 from src.preprocess import extract_features
 from src.domlm import DOMLMConfig
 
-SWDE_PATH = Path("/home/azureuser/dev/data/swde_html")
-PROC_PATH = Path("/home/azureuser/dev/data/swde_preprocessed")
+SWDE_PATH = Path("/home/c4i/crawler/smart_crawler_research/DOM-LM/data/swde_html/sourceCode/sourceCode")
+PROC_PATH = Path("/home/c4i/crawler/smart_crawler_research/DOM-LM/data/swde_preprocessed")
 DOMAIN = "university"
 
 config = DOMLMConfig.from_json_file("domlm-config/config.json")
 
-start_from = 4000
+start_from = 0
 files = sorted((SWDE_PATH / DOMAIN).glob("**/*.htm"))[start_from:]
 pbar = tqdm.tqdm(files,total=len(files))
 errors = []
@@ -31,7 +31,8 @@ for path in pbar:
         dir_name.mkdir(parents=True,exist_ok=True)
         with open(dir_name / path.with_suffix(".pkl").name,'wb') as f:
             pickle.dump(features,f)          
-    except Exception:
+    except Exception as e:
+        print(e)
         errors.append(path)
         pass
 print(f"Total errors: {len(errors)}")
