@@ -14,18 +14,18 @@ def clean_format_str(text):
     return text
     
 cleaner = Cleaner()
-cleaner.scripts = True
-cleaner.javascript = True
-cleaner.comments = True
-cleaner.style = False
-cleaner.links = False
-cleaner.page_structure = False
-cleaner.embedded = False
-cleaner.frames = False
-cleaner.forms = False
-cleaner.annoying_tags = False
-cleaner.remove_unknown_tags = False
-cleaner.safe_attrs_only = False
+# cleaner.scripts = True
+# cleaner.javascript = True
+# cleaner.comments = True
+cleaner.style = True
+# cleaner.links = False
+# cleaner.page_structure = True
+# cleaner.embedded = True
+# cleaner.frames = False
+# cleaner.forms = False
+# cleaner.annoying_tags = False
+# cleaner.remove_unknown_tags = False
+# cleaner.safe_attrs_only = False
 
 def get_cleaned_body(html):
     html = html.replace("\0", "")  # Delete NULL bytes.

@@ -199,6 +199,7 @@ def get_tree_features(t):
             "sibling_node_ids": [] , # p2
             "depth_ids": [] , # p3
             "tag_ids": [] , # p4
+            "position_ids": [], # p5
             "input_ids": [],
             "attention_mask" : []
         }
@@ -231,7 +232,7 @@ def get_tree_features(t):
         )
     # do batch tokenization
     tokenizer_res = tokenizer(reprs,return_tensors="pt",truncation=True,padding=True)     
-    for el_result,input_ids,attn_mask in zip(el_results,tokenizer_res["input_ids"],tokenizer_res["attention_mask"]):
+    for i, (el_result,input_ids,attn_mask) in enumerate(zip(el_results,tokenizer_res["input_ids"],tokenizer_res["attention_mask"])):
         len_tokens = attn_mask.sum().item()                
         input_ids = input_ids[:len_tokens].tolist()
         attn_mask = attn_mask[:len_tokens].tolist()
@@ -240,6 +241,8 @@ def get_tree_features(t):
                 result[key] += input_ids
             elif key == "attention_mask":
                 result[key] += attn_mask
+            elif key == "position_ids":
+                result[key] += [len(result[key])+j for j in range(len(input_ids))]
             else:
                 result[key] += [el_result[key]] * len_tokens
     return result
@@ -255,6 +258,7 @@ def extract_features(html_string,config,m=None,s=128):
         "depth_ids": config.depth_pad_id,
         "tag_ids": config.tag_pad_id,
         # "tok_positions": max_position_embeddings + 1, # p5
+        "position_ids": config.max_position_embeddings,
         "input_ids": tokenizer.pad_token_id,
         "attention_mask": 0,
     }

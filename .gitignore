@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 
 notebooks/experiments/
+
+data/
+.vscode/
