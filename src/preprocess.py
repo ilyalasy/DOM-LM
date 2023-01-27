@@ -5,8 +5,10 @@ from lxml import etree
 from transformers import AutoTokenizer
 
 from src.html_utils import get_cleaned_body
+from src.utils import truncate
 
-tokenizer = AutoTokenizer.from_pretrained("roberta-base")
+
+tokenizer = AutoTokenizer.from_pretrained("roberta-base", )
 
 NODE_ATTRIBUTES = ("class", "id", "title", "aria-label")
 
@@ -78,33 +80,32 @@ def postorder(root: etree._Element):
             current_idx = child_idx + 1 
     return
 
-def generate_subtrees(root,m,s):
+def generate_subtrees(root: etree._Element, token_reps:dict, m, s):
     pre_order = list(root.iter())
     post_order = list(postorder(root))
-    return _get_subtrees(pre_order,post_order,m,s)
+    return _get_subtrees(pre_order, post_order, token_reps, m, s)
 
-def _tokens_len(elements):
+def _tokens_len(elements, token_reps):
     if len(elements) == 0:
         return 0
-    tokens = tokenize_elements(elements)
-    return tokens["attention_mask"].sum().item()
+    return sum(sum(token_reps[el]['tokenizer_res']['attention_mask']) for el in elements)
 
 # Appendix A: Algorithm 1
-def _get_subtrees(pre_order,post_order, m,s):
+def _get_subtrees(pre_order, post_order, token_reps, m, s):
     subtrees = []
 
     ### init first subtree
     new = []
     node_ids = {}
     for i,el in enumerate(pre_order):
-        if _tokens_len(new) >= m:
+        if _tokens_len(new, token_reps) >= m:
             break
         new.append(el)  
         node_ids[el] = i
 
     while len(new) != 0:
         visited = [n for n,idx in node_ids.items() if idx < node_ids[new[0]] ]
-        total_len = _tokens_len(visited + new)
+        total_len = _tokens_len(visited + new, token_reps)
         ###prune postorder
         for el in post_order:
             if el in new or total_len <= m:        
@@ -112,7 +113,7 @@ def _get_subtrees(pre_order,post_order, m,s):
             else:
                 try:
                     visited.remove(el)
-                    total_len -= _tokens_len([el])
+                    total_len -= _tokens_len([el], token_reps)
                 except ValueError:
                     pass
         ### prune root
@@ -125,11 +126,11 @@ def _get_subtrees(pre_order,post_order, m,s):
                 num_child = 2 # pop from new if there are no nodes in visited left
 
             if num_child < 2:
-                total_len -= _tokens_len([el_root])
+                total_len -= _tokens_len([el_root], token_reps)
                 visited.pop(0)            
             else:
                 el_last = new.pop()
-                total_len -= _tokens_len([el_last])
+                total_len -= _tokens_len([el_last], token_reps)
         t = visited + new
         subtrees.append(t)
 
@@ -138,7 +139,7 @@ def _get_subtrees(pre_order,post_order, m,s):
         new = []
         next_idx = node_ids[el_last] + 1
         for i,el in enumerate(pre_order[next_idx:],start=next_idx):
-            if _tokens_len(new) >= s:
+            if _tokens_len(new, token_reps) >= s:
                 break
             new.append(el)        
             node_ids[el] = i    
@@ -191,7 +192,7 @@ def get_features(element: etree._Element):
 
 
 # Local Subtree features
-def get_tree_features(t):
+def get_tree_features(t: etree._Element, token_reps: dict, max_seq_length:int):
     elem_idxs = {}
     result = {
             "node_ids": [] , # p0
@@ -204,12 +205,17 @@ def get_tree_features(t):
             "attention_mask" : []
         }
     reprs = []
+    input_ids = []
+    attention_mask = []
     el_results = []
     for i,el in enumerate(t):
-        el_parent = el.getparent()
-        el_repr = represent_node(el)   
+        # el_repr = represent_node(el)   
+        el_repr = token_reps[el]['el_repr']
         reprs.append(el_repr)        
+        input_ids.append(token_reps[el]['tokenizer_res']['input_ids'])
+        attention_mask.append(token_reps[el]['tokenizer_res']['attention_mask'])
         
+        el_parent = el.getparent()
         parent_node_idx = 0 
         node_idx = i
         if el_parent in elem_idxs:        
@@ -230,12 +236,15 @@ def get_tree_features(t):
             "tag_ids": tag_id , # p4            
             }
         )
-    # do batch tokenization
-    tokenizer_res = tokenizer(reprs,return_tensors="pt",truncation=True,padding=True)     
-    for i, (el_result,input_ids,attn_mask) in enumerate(zip(el_results,tokenizer_res["input_ids"],tokenizer_res["attention_mask"])):
-        len_tokens = attn_mask.sum().item()                
-        input_ids = input_ids[:len_tokens].tolist()
-        attn_mask = attn_mask[:len_tokens].tolist()
+    max_length = max([len(x) for x in input_ids])
+    if max_length > max_seq_length:
+        max_length = max_seq_length
+    # input_ids = padding(input_ids, max_length, 1)
+    input_ids = truncate(input_ids, max_length)
+    # attention_mask = padding(attention_mask, max_length, 0)
+    attention_mask = truncate(attention_mask, max_length)
+    for i, (el_result, input_ids, attn_mask) in enumerate(zip(el_results, input_ids, attention_mask)):
+        len_tokens = sum(attn_mask)
         for key in result:
             if key == "input_ids":
                 result[key] += input_ids
@@ -247,6 +256,17 @@ def get_tree_features(t):
                 result[key] += [el_result[key]] * len_tokens
     return result
 
+def extract_token_for_nodes(dom: etree._Element) -> dict:
+    '''Create dictionary that store el_reprs and tokenizer_res for each node in the DOM'''
+    res = dict()
+    for el in list(dom.iter()):
+        el_repr = represent_node(el)
+        tokenizer_res = tokenizer(el_repr,truncation=True)
+        res[el] = {
+            "el_repr": el_repr,
+            "tokenizer_res": tokenizer_res
+        }
+    return res
 
 def extract_features(html_string,config,m=None,s=128):
     if m is None:
@@ -260,14 +280,15 @@ def extract_features(html_string,config,m=None,s=128):
         # "tok_positions": max_position_embeddings + 1, # p5
         "position_ids": config.max_position_embeddings,
         "input_ids": tokenizer.pad_token_id,
-        "attention_mask": 0,
+        "attention_mask": 0
     }
 
     dom = get_cleaned_body(html_string)
-    subtrees = generate_subtrees(dom,m,s) # requires tokenizer
+    token_reps = extract_token_for_nodes(dom)
+    subtrees = generate_subtrees(dom, token_reps, m, s) # requires tokenizer
     result = []
     for sub in subtrees:  
-        data = get_tree_features(sub)     
+        data = get_tree_features(sub, token_reps, m)
         # data = {}
         # for el in sub:
         #     feats = get_features(el) # should we consider all attributes locally?            

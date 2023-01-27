@@ -13,7 +13,7 @@ from src.domlm import DOMLMConfig
 
 SWDE_PATH = Path("/home/c4i/crawler/smart_crawler_research/DOM-LM/data/swde_html/sourceCode/sourceCode")
 PROC_PATH = Path("/home/c4i/crawler/smart_crawler_research/DOM-LM/data/swde_preprocessed")
-DOMAINS = ["auto", "book", "camera", "job", "movie", "nbaplayer", "restaurant", "university", ""]
+DOMAINS = ["auto", "book", "camera", "job", "movie", "nbaplayer", "restaurant", "university"]
 
 config = DOMLMConfig.from_json_file("domlm-config/config.json")
 
