@@ -8,9 +8,9 @@ def clean_spaces(text):
     return " ".join(re.split(r"\s+", text.strip()))
 
 def clean_format_str(text):
+    text = clean_spaces(text)
     text = "".join(ch for ch in text if unicodedata.category(ch)[0] != "C")
     text = "".join([c if ord(c) < 128 else "" for c in text])
-    text = clean_spaces(text)
     return text
     
 cleaner = Cleaner()

@@ -1,5 +1,26 @@
-import numpy as np
 
+
+label2id = {
+    'name': 0,
+    'phone': 1,
+    'type': 2,
+    'website': 3,
+    'director': 4,
+    'genre': 5,
+    'mpaa_rating': 6,
+    'title': 7
+}
+
+id2label = {
+    0: 'name',
+    1: 'phone',
+    2: 'type',
+    3: 'website',
+    4: 'director',
+    5: 'genre',
+    6: 'mpaa_rating',
+    7: 'title'
+}
 
 def padding(data, max_len, pad_value=1) -> list:
     """
