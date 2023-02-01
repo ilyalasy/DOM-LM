@@ -60,7 +60,7 @@ def preprocess_swde(input_dir, config, output_dir, domains):
                 pass
         print(f"Total errors: {len(errors)}")
 
-def preprocess_swde_attribute_extraction(input_dir, config_file, output_dir, domains):
+def preprocess_swde_attr_extract(input_dir, config_file, output_dir, domains):
     SWDE_PATH = Path(input_dir)
     LABEL_PATH = SWDE_PATH / 'groundtruth'
     PROC_PATH = Path(output_dir)
@@ -99,11 +99,11 @@ def preprocess_swde_attribute_extraction(input_dir, config_file, output_dir, dom
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task', type=str, default='attribute_extraction', help='preprocess data for tasks', choices=['domlm', 'attribute_extraction'])
+    parser.add_argument('--task', type=str, default='attr_extract', help='preprocess data for tasks', choices=['domlm', 'attr_extract'])
     parser.add_argument('--input_dir', type=str, default='data/swde_html/sourceCode/sourceCode', help='data directory')
     parser.add_argument('--config', type=str, default='domlm-config/config.json', help='config file')
     parser.add_argument('--output_dir', type=str, default='data/swde_ae_preprocessed', help='output directory')
-    parser.add_argument('--domains', type=str, default='auto,book,camera,job,movie,nbaplayer,restaurant,university', help='domains')
+    parser.add_argument('--domains', type=str, default='university', help='domains')
     args = parser.parse_args()
 
     task = args.task
@@ -114,5 +114,5 @@ if __name__ == '__main__':
 
     if task == 'domlm':
         preprocess_swde(input_dir, config, output_dir, domains)
-    elif task == 'attribute_extraction':
-        preprocess_swde_attribute_extraction(input_dir, config, output_dir, domains)
+    elif task == 'attr_extract':
+        preprocess_swde_attr_extract(input_dir, config, output_dir, domains)

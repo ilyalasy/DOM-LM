@@ -350,17 +350,17 @@ def get_tree_features_ae_task(t: List, token_repr: dict, node2label:dict, max_se
         max_length = max_seq_length
     input_ids = truncate(input_ids, max_length)
     attention_mask = truncate(attention_mask, max_length)
-    for i, (el_result, input_ids, attn_mask) in enumerate(zip(el_results, input_ids, attention_mask)):
+    for i, (el_result, input_id, attn_mask, label) in enumerate(zip(el_results, input_ids, attention_mask, labels)):
         len_tokens = sum(attn_mask)
         for key in result:
             if key == "input_ids":
-                result[key] += input_ids
+                result[key] += input_id
             elif key == "attention_mask":
                 result[key] += attn_mask
             elif key == "labels":
-                result[key] += labels
+                result[key] += label
             elif key == "position_ids":
-                result[key] += [len(result[key])+j for j in range(len(input_ids))]
+                result[key] += [len(result[key])+j for j in range(len(input_id))]
             else:
                 result[key] += [el_result[key]] * len_tokens
     return result

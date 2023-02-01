@@ -39,5 +39,5 @@ class SWDEDataset(Dataset):
         return self.current_features[idx - min_idx]
 
 
-class SWDEAtributeExtractionDataset(SWDEDataset):
+class SWDEAttributeExtractionDataset(SWDEDataset):
     pass
