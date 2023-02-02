@@ -184,7 +184,7 @@ def get_features(element: etree._Element):
         "sibling_node_ids": [node_idx_siblings] * len_tokens, # p2
         "depth_ids": [depth] * len_tokens, # p3
         "tag_ids": [tag_id] * len_tokens, # p4
-        "position_ids": [token_idx + i for i in range(len_tokens)], # p5
+        # "position_ids": [token_idx + i for i in range(len_tokens)], # p5
         **tokenizer_res
     }
     return result
@@ -199,7 +199,7 @@ def get_tree_features(t: etree._Element, token_repr: dict, max_seq_length:int):
             "sibling_node_ids": [] , # p2
             "depth_ids": [] , # p3
             "tag_ids": [] , # p4
-            "position_ids": [], # p5
+            # "position_ids": [], # p5
             "input_ids": [],
             "attention_mask" : []
         }
@@ -275,7 +275,7 @@ def extract_features(html_string,config,m=None,s=128):
         "depth_ids": config.depth_pad_id,
         "tag_ids": config.tag_pad_id,
         # "tok_positions": max_position_embeddings + 1, # p5
-        "position_ids": config.max_position_embeddings,
+        # "position_ids": config.max_position_embeddings,
         "input_ids": tokenizer.pad_token_id,
         "attention_mask": 0
     }
@@ -307,7 +307,7 @@ def get_tree_features_ae_task(t: List, token_repr: dict, node2label:dict, max_se
             "sibling_node_ids": [] , # p2
             "depth_ids": [] , # p3
             "tag_ids": [] , # p4
-            "position_ids": [], # p5
+            # "position_ids": [], # p5
             "input_ids": [],
             "attention_mask" : [],
             "labels": []
@@ -359,8 +359,8 @@ def get_tree_features_ae_task(t: List, token_repr: dict, node2label:dict, max_se
                 result[key] += attn_mask
             elif key == "labels":
                 result[key] += label
-            elif key == "position_ids":
-                result[key] += [len(result[key])+j for j in range(len(input_id))]
+            # elif key == "position_ids":
+            #     result[key] += [len(result[key])+j for j in range(len(input_id))]
             else:
                 result[key] += [el_result[key]] * len_tokens
     return result
@@ -393,7 +393,7 @@ def extract_features_ae_task(html_string, text2label, config, m=None, s=128):
         "sibling_node_ids": config.sibling_pad_id,
         "depth_ids": config.depth_pad_id,
         "tag_ids": config.tag_pad_id,
-        "position_ids": config.max_position_embeddings,
+        # "position_ids": config.pad_token_id,
         "input_ids": tokenizer.pad_token_id,
         "attention_mask": 0,
         "labels": -100
