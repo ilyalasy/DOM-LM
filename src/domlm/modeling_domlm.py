@@ -1188,6 +1188,11 @@ class DOMLMForTokenClassification(DOMLMPreTrainedModel):
         )
         self.dropout = nn.Dropout(classifier_dropout)
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
+        # self.classifier = nn.Sequential([
+        #     nn.Linear(config.hidden_size, 768),
+        #     nn.ReLU(),
+        #     nn.Linear(768, config.num_labels)
+        # ])
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -1243,7 +1248,6 @@ class DOMLMForTokenClassification(DOMLMPreTrainedModel):
 
         outputs = self.domlm(
             input_ids,
-            input_ids=input_ids,
             node_ids=node_ids, 
             parent_node_ids=parent_node_ids,
             sibling_node_ids=sibling_node_ids,

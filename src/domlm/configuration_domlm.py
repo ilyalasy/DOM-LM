@@ -122,4 +122,11 @@ class DOMLMConfig(PretrainedConfig):
         self.sibling_pad_id = max_sibling_embeddings - 1 
         self.depth_pad_id = max_depth_embeddings - 1
         self.tag_pad_id = max_tag_embeddings - 1
-        
+
+
+class DOMLMAttrExtractConfig(DOMLMConfig):
+    model_type = "domlm_ae"
+    
+    def __init__(self, num_labels, **kwargs):
+        super().__init__(**kwargs)
+        self.num_labels = num_labels
