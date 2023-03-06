@@ -37,3 +37,7 @@ class SWDEDataset(Dataset):
             self.current_file_idx = file_idx
 
         return self.current_features[idx - min_idx]
+
+
+class SWDEAttributeExtractionDataset(SWDEDataset):
+    pass
